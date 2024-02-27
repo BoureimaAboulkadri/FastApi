@@ -1,13 +1,29 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
 
+class Expression(BaseModel):
+    expression: str
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+def calculer_npi(expression):
+    pile = []
+    for token in expression.split():
+        if token in "+-*/":
+            b = pile.pop()
+            a = pile.pop()
+            if token == '+': pile.append(a + b)
+            elif token == '-': pile.append(a - b)
+            elif token == '*': pile.append(a * b)
+            elif token == '/': pile.append(a / b)
+        else:
+            pile.append(float(token))
+    return pile.pop()
 
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+@app.post("/calculer/")
+def calculer(expression: Expression):
+    try:
+        resultat = calculer_npi(expression.expression)
+        return {"expression": expression.expression, "resultat": resultat}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
