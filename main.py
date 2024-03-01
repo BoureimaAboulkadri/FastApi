@@ -1,15 +1,29 @@
 from fastapi import FastAPI, HTTPException, Response
 from pydantic import BaseModel
 from pymongo import MongoClient
-from pymongo import MongoClient
-from pymongo import MongoClient
 import pandas as pd
+from fastapi.middleware.cors import CORSMiddleware
 from io import StringIO
 
 
 # Configuration FastAPI
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",  # Port standard pour le développement React
+    "http://127.0.0.1:3000",  # Autre forme d'adresse locale
+    "http://0.0.0.0:8000/",  # Adresse locale pour le serveur FastAPI
+    "http://127.0.0.1:8000/calculer/", # adresse locale pour le postman
+    "http://localhost:8000/export/", # adresse export
+    # Ajoutez d'autres origines au besoin
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Autoriser toutes les méthodes
+    allow_headers=["*"],  # Autoriser tous les headers
+)
 # Configuration MongoDB
 client = MongoClient('mongodb://localhost:27017/')
 db = client['NPI']
